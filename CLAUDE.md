@@ -39,4 +39,4 @@ Or run each skill individually for more control.
 - Never modify the source repository unless explicitly told to
 - Always save outputs to outputs/reviews/ before posting anywhere
 - Update agents/review_state.json after every completed review
-- If a script fails, report the error and stop 鈥?do not guess or continue blindly
+- If a script fails, report the error and stop - do not guess or continue blindly

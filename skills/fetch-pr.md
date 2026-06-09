@@ -7,8 +7,8 @@ a target GitHub repository and save the diff to disk for the review-code skill.
 ---
 
 ## Inputs
-- {repo} 鈥?GitHub repo in the format owner/repo-name (e.g. facebook/react)
-- {pr_number} 鈥?optional. If not provided, fetch the most recent open PR.
+- {repo} - GitHub repo in the format owner/repo-name (e.g. facebook/react)
+- {pr_number} - optional. If not provided, fetch the most recent open PR.
 
 ---
 

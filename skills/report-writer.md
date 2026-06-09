@@ -8,8 +8,8 @@ markdown report. Optionally post it as a GitHub PR comment.
 
 ## Inputs
 - Findings from code-reviewer skill (already in memory)
-- {repo} 鈥?the repo that was reviewed
-- {pr_number} 鈥?the PR number
+- {repo} - the repo that was reviewed
+- {pr_number} - the PR number
 
 ---
 
@@ -17,7 +17,7 @@ markdown report. Optionally post it as a GitHub PR comment.
 
 1. Generate a markdown report using this exact structure:
 
-# Code Review 鈥?{repo} PR #{pr_number}
+# Code Review - {repo} PR #{pr_number}
 
 **Reviewed by:** Code Reviewer Agent
 **Date:** {today}

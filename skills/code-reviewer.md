@@ -1,13 +1,13 @@
 # Skill: code-reviewer
 
 ## Goal
-Read a fetched PR diff and produce a structured code review 鈥?identifying bugs,
+Read a fetched PR diff and produce a structured code review - identifying bugs,
 security issues, style violations, and improvement suggestions.
 
 ---
 
 ## Inputs
-- {diff_file} 鈥?path to the JSON diff file from the fetch-pr skill
+- {diff_file} - path to the JSON diff file from the fetch-pr skill
   e.g. outputs/reviews/facebook_react_pr1234_diff.json
 
 ---
@@ -15,9 +15,9 @@ security issues, style violations, and improvement suggestions.
 ## Steps
 
 1. Read the diff file. It contains:
-   - pr_title 鈥?title of the pull request
-   - pr_author 鈥?GitHub username of the author
-   - files_changed 鈥?list of files with their before/after content
+   - pr_title - title of the pull request
+   - pr_author - GitHub username of the author
+   - files_changed - list of files with their before/after content
 
 2. For each file changed, review the diff against these criteria:
 
@@ -45,7 +45,7 @@ security issues, style violations, and improvement suggestions.
    - Already covered by a comment in the diff
    - Outside the scope of the changed lines
 
-4. Store your findings as a structured list in memory 鈥?the report-writer skill
+4. Store your findings as a structured list in memory - the report-writer skill
    will use them next.
 
 5. Print a summary to the user:

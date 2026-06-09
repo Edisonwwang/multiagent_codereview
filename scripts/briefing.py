@@ -23,7 +23,7 @@ def main():
         state = json.load(f)
 
     print("\n========================================")
-    print(f"  CODE REVIEWER 鈥?Daily Briefing")
+    print(f"  CODE REVIEWER - Daily Briefing")
     print(f"  {date.today().strftime('%A, %d %B %Y')}")
     print("========================================\n")
 

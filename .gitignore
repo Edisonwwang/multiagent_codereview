@@ -1,0 +1,12 @@
+# Environment — never commit tokens
+.env
+
+# Review outputs — generated files, not source
+outputs/reviews/*.json
+outputs/reviews/*.md
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.DS_Store

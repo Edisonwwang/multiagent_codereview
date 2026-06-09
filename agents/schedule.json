@@ -1,0 +1,11 @@
+{
+  "tasks": [
+    {
+      "name": "Review Latest PR",
+      "skill": "fetch-pr -> review-code -> write-report",
+      "cadence_days": 1,
+      "last_run": null,
+      "repo": "owner/your-repo"
+    }
+  ]
+}

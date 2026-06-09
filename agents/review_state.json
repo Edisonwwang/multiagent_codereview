@@ -1,0 +1,11 @@
+{
+  "repos": [
+    {
+      "repo": "owner/your-repo",
+      "last_pr_reviewed": null,
+      "last_run": null,
+      "status": "pending"
+    }
+  ],
+  "review_history": []
+}

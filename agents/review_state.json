@@ -1,11 +1,18 @@
 {
   "repos": [
     {
-      "repo": "owner/your-repo",
-      "last_pr_reviewed": null,
-      "last_run": null,
-      "status": "pending"
+      "repo": "Edisonwwang/multiagent_codereview",
+      "last_pr_reviewed": 1,
+      "last_run": "2026-06-09",
+      "status": "reviewed"
     }
   ],
-  "review_history": []
+  "review_history": [
+    {
+      "repo": "Edisonwwang/multiagent_codereview",
+      "pr": 1,
+      "date": "2026-06-09",
+      "status": "reviewed"
+    }
+  ]
 }

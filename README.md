@@ -116,3 +116,5 @@ State JSON    = memory between sessions
 - [ ] Phase 2 — Obsidian vault sync + self-expanding skill library
 - [ ] Phase 3 — Human approval gate for new auto-generated skills
 - [ ] Phase 4 — Vector DB (Chroma) for semantic skill retrieval at scale
+
+<!-- test PR for agent review -->

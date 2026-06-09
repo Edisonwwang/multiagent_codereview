@@ -56,3 +56,7 @@ security issues, style violations, and improvement suggestions.
 
 ## Output
 Structured findings in memory (passed to write-report skill)
+
+## Notes
+- Prioritise critical findings over style suggestions
+- Always include line numbers where possible

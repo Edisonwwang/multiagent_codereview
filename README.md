@@ -39,6 +39,8 @@ code-reviewer-agent/
 |-- CLAUDE.md                    # Claude Code startup instructions
 |-- .env.example                 # Environment template
 |-- .env                         # Local tokens, never committed
+|-- requirements.txt             # Runtime Python dependencies
+|-- requirements-dev.txt         # Developer dependency entry point
 |
 |-- agents/
 |   |-- schedule.json            # What repos to review and how often
@@ -55,13 +57,18 @@ code-reviewer-agent/
 |
 |-- scripts/
 |   |-- briefing.py              # Startup briefing and token warning
+|   |-- common.py                # Shared repo paths and JSON/text helpers
 |   |-- fetch_github.py          # Calls GitHub API and saves diff JSON
+|   |-- github_client.py         # Shared GitHub REST client and pagination
 |   |-- search_skills.py         # Semantic Chroma search with text fallback
 |   |-- index_skills.py          # Rebuilds the Chroma skill index
 |   |-- create_skill.py          # Drafts pending skill templates
 |   |-- approve_skill.py         # Promotes pending skills and auto-indexes them
 |   |-- post_review_comment.py   # Posts report as GitHub PR comment
 |   `-- update_schedule.py       # Updates state after a review
+|
+|-- tests/
+|   `-- test_scripts.py          # Unit tests for script behavior
 |
 |-- .chroma/                     # Local Chroma vector DB, git-ignored
 `-- outputs/
@@ -89,6 +96,12 @@ Chroma powers semantic skill search:
 
 ```bash
 pip install -r requirements.txt
+```
+
+For development and test work, install the development dependency entry point:
+
+```bash
+pip install -r requirements-dev.txt
 ```
 
 ### 3. Build the Skill Index
@@ -255,6 +268,19 @@ fetched diff JSON.
 
 ---
 
+## Testing
+
+Run the unit tests before committing script changes:
+
+```bash
+python -m unittest discover -s tests
+```
+
+The current tests cover shared JSON writing, update-schedule failure behavior,
+and pending skill creation.
+
+---
+
 ## Does It Work End to End?
 
 The local review pipeline works when:
@@ -265,6 +291,8 @@ The local review pipeline works when:
 - The repo has an open PR, or you pass `--pr`.
 - `scripts/fetch_github.py` can reach the GitHub API.
 - Codex reviews the fetched diff and writes the report.
+- Unit tests pass with `python -m unittest discover -s tests` after script
+  changes.
 
 Posting back to GitHub additionally requires:
 
@@ -289,6 +317,8 @@ judgment-heavy review step.
 CLAUDE.md             = Claude Code startup instructions
 skills/*.md           = Step-by-step SOPs per role
 agents/skills-registry.json = Active and pending skill source of truth
+scripts/common.py           = Shared paths and JSON/text file helpers
+scripts/github_client.py    = Shared GitHub REST client
 scripts/search_skills.py    = Semantic Chroma search with text fallback
 scripts/index_skills.py     = Rebuilds the local vector index
 State JSON            = Memory between sessions

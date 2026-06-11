@@ -60,6 +60,7 @@ def main():
     entry["file"] = active_path.replace("\\", "/")
     entry.pop("created", None)
     entry.pop("status", None)
+    new_entry = entry
     active.append(entry)
 
     registry["pending"] = remaining_pending
@@ -72,6 +73,21 @@ def main():
     print(f"[OK] Approved skill '{skill_name}'")
     print(f"     Moved {pending_path} -> {active_path}")
     print("     Updated agents/skills-registry.json")
+
+    # Auto-index the newly approved skill into Chroma
+    try:
+        import chromadb
+        client     = chromadb.PersistentClient(path=".chroma")
+        collection = client.get_or_create_collection("skills")
+        doc = f"{args.name}. {new_entry['description']}. tags: {' '.join(new_entry.get('tags', []))}"
+        collection.upsert(
+            ids=[args.name],
+            documents=[doc],
+            metadatas=[{"file": new_entry["file"], "name": args.name}]
+        )
+        print(f"[OK] Indexed into Chroma automatically.")
+    except Exception as e:
+        print(f"[WARN] Chroma auto-index failed: {e}  run index_skills.py manually.")
 
 
 if __name__ == "__main__":

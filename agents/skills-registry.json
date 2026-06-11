@@ -23,6 +23,66 @@
       "file": "skills/skill-creator.md",
       "description": "Drafts a new skill file when the agent encounters a task with no matching skill",
       "tags": ["meta", "skill", "create", "draft", "new"]
+    },
+    {
+      "name": "dependency-checker",
+      "file": "skills/dependency-checker.md",
+      "description": "Scans dependency files for outdated packages, version changes, and known vulnerable packages",
+      "tags": ["dependencies", "packages", "npm", "pip", "vulnerabilities", "versions"]
+    },
+    {
+      "name": "test-coverage-checker",
+      "file": "skills/test-coverage-checker.md",
+      "description": "Checks whether new code added in a PR has corresponding test coverage",
+      "tags": ["tests", "coverage", "tdd", "unit", "spec"]
+    },
+    {
+      "name": "pr-summary-writer",
+      "file": "skills/pr-summary-writer.md",
+      "description": "Writes a plain English summary of what a PR does and whether it is ready to merge",
+      "tags": ["summary", "plain english", "overview", "merge", "description"]
+    },
+    {
+      "name": "security-scanner",
+      "file": "skills/security-scanner.md",
+      "description": "Deep security scan for secrets, injection vulnerabilities, and OWASP issues",
+      "tags": ["security", "secrets", "injection", "owasp", "vulnerabilities", "tokens", "keys"]
+    },
+    {
+      "name": "code-complexity-analyzer",
+      "file": "skills/code-complexity-analyzer.md",
+      "description": "Flags functions that are too long, too nested, or too complex",
+      "tags": ["complexity", "refactor", "nesting", "functions", "technical debt"]
+    },
+    {
+      "name": "documentation-checker",
+      "file": "skills/documentation-checker.md",
+      "description": "Checks new functions and classes for missing docstrings, JSDoc, and inline comments",
+      "tags": ["documentation", "docstrings", "jsdoc", "comments", "readme"]
+    },
+    {
+      "name": "performance-reviewer",
+      "file": "skills/performance-reviewer.md",
+      "description": "Spots common performance anti-patterns including N+1 queries, memory leaks, and inefficient loops",
+      "tags": ["performance", "optimisation", "n+1", "memory", "loops", "queries"]
+    },
+    {
+      "name": "commit-message-reviewer",
+      "file": "skills/commit-message-reviewer.md",
+      "description": "Reviews commit messages against conventional commits format for clarity and consistency",
+      "tags": ["commits", "git", "conventional commits", "messages", "history"]
+    },
+    {
+      "name": "changelog-updater",
+      "file": "skills/changelog-updater.md",
+      "description": "Generates a CHANGELOG.md entry for a PR in Keep a Changelog format",
+      "tags": ["changelog", "release notes", "versioning", "history", "docs"]
+    },
+    {
+      "name": "docker-reviewer",
+      "file": "skills/docker-reviewer.md",
+      "description": "Reviews Dockerfile and docker-compose changes for security issues and best practices",
+      "tags": ["docker", "dockerfile", "containers", "security", "devops"]
     }
   ],
   "pending": []

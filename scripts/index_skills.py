@@ -8,22 +8,18 @@ Usage:
   python scripts/index_skills.py
 """
 
-import json
-import os
 import chromadb
 
-REGISTRY_PATH = "agents/skills-registry.json"
-CHROMA_PATH   = ".chroma"
+from common import CHROMA_DIR, REGISTRY_PATH, load_json
 
 def build_document(skill):
     return f"{skill['name']}. {skill['description']}. tags: {' '.join(skill.get('tags', []))}"
 
 def main():
-    client     = chromadb.PersistentClient(path=CHROMA_PATH)
+    client     = chromadb.PersistentClient(path=str(CHROMA_DIR))
     collection = client.get_or_create_collection("skills")
 
-    with open(REGISTRY_PATH) as f:
-        registry = json.load(f)
+    registry = load_json(REGISTRY_PATH)
 
     skills = registry.get("active", [])
     if not skills:
@@ -35,7 +31,7 @@ def main():
     metadatas = [{"file": s["file"], "name": s["name"]} for s in skills]
 
     collection.upsert(ids=ids, documents=documents, metadatas=metadatas)
-    print(f"[OK] Indexed {len(skills)} skills into Chroma at {CHROMA_PATH}/")
+    print(f"[OK] Indexed {len(skills)} skills into Chroma at {CHROMA_DIR}/")
     for s in skills:
         print(f"  - {s['name']}")
 

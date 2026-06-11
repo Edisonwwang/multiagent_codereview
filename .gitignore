@@ -1,8 +1,8 @@
-# Environment — never commit tokens
+# Environment - never commit tokens
 .env
 CODEX_*.md
 
-# Review outputs — generated files, not source
+# Review outputs - generated files, not source
 outputs/reviews/*.json
 outputs/reviews/*.md
 

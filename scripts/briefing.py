@@ -4,18 +4,16 @@ Reads schedule.json and review_state.json, prints a daily briefing.
 Run automatically by Claude Code on startup via CLAUDE.md.
 """
 
-import json
 import os
 from datetime import datetime, date
 
+from common import ROOT, SCHEDULE_PATH, STATE_PATH, load_json
+
 try:
     from dotenv import load_dotenv
-    load_dotenv()
+    load_dotenv(ROOT / ".env")
 except ImportError:
     pass
-
-SCHEDULE_PATH = "agents/schedule.json"
-STATE_PATH    = "agents/review_state.json"
 
 def days_since(date_str):
     if not date_str:
@@ -27,10 +25,8 @@ def main():
     if not os.getenv("GITHUB_TOKEN"):
         print("  WARNING: GITHUB_TOKEN not set in .env  fetching private repos will fail")
 
-    with open(SCHEDULE_PATH) as f:
-        schedule = json.load(f)
-    with open(STATE_PATH) as f:
-        state = json.load(f)
+    schedule = load_json(SCHEDULE_PATH)
+    state = load_json(STATE_PATH)
 
     print("\n========================================")
     print(f"  CODE REVIEWER - Daily Briefing")

@@ -9,11 +9,8 @@ Usage:
 """
 
 import argparse
-import json
-import os
 
-REGISTRY_PATH = "agents/skills-registry.json"
-CHROMA_PATH   = ".chroma"
+from common import CHROMA_DIR, REGISTRY_PATH, load_json
 
 def text_search(skills, query, top):
     """Fallback: simple keyword match."""
@@ -28,7 +25,7 @@ def text_search(skills, query, top):
 def chroma_search(query, top):
     """Semantic search via Chroma."""
     import chromadb
-    client     = chromadb.PersistentClient(path=CHROMA_PATH)
+    client     = chromadb.PersistentClient(path=str(CHROMA_DIR))
     collection = client.get_or_create_collection("skills")
     if collection.count() == 0:
         return None
@@ -48,12 +45,11 @@ def main():
     parser.add_argument("--top",   type=int, default=3)
     args = parser.parse_args()
 
-    with open(REGISTRY_PATH) as f:
-        registry = json.load(f)
+    registry = load_json(REGISTRY_PATH)
     active = registry.get("active", [])
 
     # Try Chroma first
-    use_chroma = os.path.exists(CHROMA_PATH)
+    use_chroma = CHROMA_DIR.exists()
     results    = None
 
     if use_chroma:

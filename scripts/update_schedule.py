@@ -7,29 +7,10 @@ Usage:
 """
 
 import argparse
-import json
-import os
 import sys
-import tempfile
 from datetime import date
 
-SCHEDULE_PATH = "agents/schedule.json"
-STATE_PATH    = "agents/review_state.json"
-
-def atomic_write_json(path, data):
-    directory = os.path.dirname(path) or "."
-    fd, tmp_path = tempfile.mkstemp(prefix=".tmp-", suffix=".json", dir=directory, text=True)
-    try:
-        with os.fdopen(fd, "w") as f:
-            json.dump(data, f, indent=2)
-            f.write("\n")
-        os.replace(tmp_path, path)
-    except Exception:
-        try:
-            os.remove(tmp_path)
-        except OSError:
-            pass
-        raise
+from common import SCHEDULE_PATH, STATE_PATH, atomic_write_json, display_path, load_json
 
 def main():
     parser = argparse.ArgumentParser()
@@ -40,8 +21,7 @@ def main():
 
     today = str(date.today())
 
-    with open(SCHEDULE_PATH) as f:
-        schedule = json.load(f)
+    schedule = load_json(SCHEDULE_PATH)
 
     schedule_found = False
     for task in schedule["tasks"]:
@@ -49,8 +29,7 @@ def main():
             task["last_run"] = today
             schedule_found = True
 
-    with open(STATE_PATH) as f:
-        state = json.load(f)
+    state = load_json(STATE_PATH)
 
     state_found = False
     for repo_entry in state["repos"]:
@@ -63,9 +42,9 @@ def main():
     if not schedule_found or not state_found:
         missing = []
         if not schedule_found:
-            missing.append(SCHEDULE_PATH)
+            missing.append(display_path(SCHEDULE_PATH))
         if not state_found:
-            missing.append(STATE_PATH)
+            missing.append(display_path(STATE_PATH))
         print(
             f"[ERROR] Repo '{args.repo}' not found in: {', '.join(missing)}",
             file=sys.stderr,

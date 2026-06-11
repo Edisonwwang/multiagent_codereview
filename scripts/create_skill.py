@@ -10,12 +10,16 @@ Usage:
 """
 
 import argparse
-import json
-import os
 from datetime import date
 
-REGISTRY_PATH = "agents/skills-registry.json"
-PENDING_DIR = "skills/pending"
+from common import (
+    PENDING_SKILLS_DIR,
+    REGISTRY_PATH,
+    atomic_write_json,
+    display_path,
+    load_json,
+    write_text,
+)
 
 SKILL_TEMPLATE = """# Skill: {name}
 
@@ -67,22 +71,20 @@ def main():
 
     skill_name = args.name.lower().replace(" ", "-")
     tags = [tag.strip() for tag in args.tags.split(",")]
-    filepath = os.path.join(PENDING_DIR, f"{skill_name}.md")
+    filepath = PENDING_SKILLS_DIR / f"{skill_name}.md"
 
     # -- Write skill file --------------------------------------------------
-    os.makedirs(PENDING_DIR, exist_ok=True)
+    PENDING_SKILLS_DIR.mkdir(parents=True, exist_ok=True)
 
-    if os.path.exists(filepath):
-        print(f"[WARN] Skill already exists at {filepath} - skipping file creation.")
+    if filepath.exists():
+        print(f"[WARN] Skill already exists at {display_path(filepath)} - skipping file creation.")
     else:
         content = SKILL_TEMPLATE.format(name=skill_name, description=args.description)
-        with open(filepath, "w") as f:
-            f.write(content)
-        print(f"[OK] Skill file created - {filepath}")
+        write_text(filepath, content)
+        print(f"[OK] Skill file created - {display_path(filepath)}")
 
     # -- Update registry ---------------------------------------------------
-    with open(REGISTRY_PATH) as f:
-        registry = json.load(f)
+    registry = load_json(REGISTRY_PATH)
 
     all_names = [skill["name"] for skill in registry["active"] + registry["pending"]]
     if skill_name in all_names:
@@ -90,17 +92,16 @@ def main():
     else:
         registry["pending"].append({
             "name": skill_name,
-            "file": filepath,
+            "file": display_path(filepath),
             "description": args.description,
             "tags": tags,
             "created": str(date.today()),
             "status": "pending_approval",
         })
-        with open(REGISTRY_PATH, "w") as f:
-            json.dump(registry, f, indent=2)
+        atomic_write_json(REGISTRY_PATH, registry)
         print("[OK] Registered in skills-registry.json under pending")
 
-    print(f"\n  Next: open {filepath}, fill in all sections,")
+    print(f"\n  Next: open {display_path(filepath)}, fill in all sections,")
     print(f"        then run: python scripts/approve_skill.py --name {skill_name}")
 
 

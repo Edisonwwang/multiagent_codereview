@@ -88,7 +88,7 @@ codex --version
 Chroma powers semantic skill search:
 
 ```bash
-pip install chromadb
+pip install -r requirements.txt
 ```
 
 ### 3. Build the Skill Index

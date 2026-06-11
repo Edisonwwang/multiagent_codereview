@@ -7,13 +7,18 @@ Usage:
 """
 
 import argparse
-import json
 import os
 import sys
 
-REGISTRY_PATH = "agents/skills-registry.json"
-PENDING_DIR = "skills/pending"
-ACTIVE_DIR = "skills"
+from common import (
+    CHROMA_DIR,
+    PENDING_SKILLS_DIR,
+    REGISTRY_PATH,
+    SKILLS_DIR,
+    atomic_write_json,
+    display_path,
+    load_json,
+)
 
 
 def main():
@@ -22,15 +27,14 @@ def main():
     args = parser.parse_args()
 
     skill_name = args.name.lower().replace(" ", "-")
-    pending_path = os.path.join(PENDING_DIR, f"{skill_name}.md")
-    active_path = os.path.join(ACTIVE_DIR, f"{skill_name}.md")
+    pending_path = PENDING_SKILLS_DIR / f"{skill_name}.md"
+    active_path = SKILLS_DIR / f"{skill_name}.md"
 
-    if not os.path.exists(pending_path):
-        print(f"[ERROR] Pending skill not found: {pending_path}", file=sys.stderr)
+    if not pending_path.exists():
+        print(f"[ERROR] Pending skill not found: {display_path(pending_path)}", file=sys.stderr)
         sys.exit(1)
 
-    with open(REGISTRY_PATH) as f:
-        registry = json.load(f)
+    registry = load_json(REGISTRY_PATH)
 
     pending = registry.get("pending", [])
     active = registry.get("active", [])
@@ -51,13 +55,13 @@ def main():
         print(f"[ERROR] Skill '{skill_name}' already exists in registry active[]", file=sys.stderr)
         sys.exit(1)
 
-    if os.path.exists(active_path):
-        print(f"[ERROR] Active skill file already exists: {active_path}", file=sys.stderr)
+    if active_path.exists():
+        print(f"[ERROR] Active skill file already exists: {display_path(active_path)}", file=sys.stderr)
         sys.exit(1)
 
     os.replace(pending_path, active_path)
 
-    entry["file"] = active_path.replace("\\", "/")
+    entry["file"] = display_path(active_path)
     entry.pop("created", None)
     entry.pop("status", None)
     new_entry = entry
@@ -66,18 +70,16 @@ def main():
     registry["pending"] = remaining_pending
     registry["active"] = active
 
-    with open(REGISTRY_PATH, "w") as f:
-        json.dump(registry, f, indent=2)
-        f.write("\n")
+    atomic_write_json(REGISTRY_PATH, registry)
 
     print(f"[OK] Approved skill '{skill_name}'")
-    print(f"     Moved {pending_path} -> {active_path}")
-    print("     Updated agents/skills-registry.json")
+    print(f"     Moved {display_path(pending_path)} -> {display_path(active_path)}")
+    print(f"     Updated {display_path(REGISTRY_PATH)}")
 
     # Auto-index the newly approved skill into Chroma
     try:
         import chromadb
-        client     = chromadb.PersistentClient(path=".chroma")
+        client     = chromadb.PersistentClient(path=str(CHROMA_DIR))
         collection = client.get_or_create_collection("skills")
         doc = f"{skill_name}. {new_entry['description']}. tags: {' '.join(new_entry.get('tags', []))}"
         collection.upsert(

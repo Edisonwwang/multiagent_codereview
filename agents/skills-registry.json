@@ -1,0 +1,29 @@
+{
+  "active": [
+    {
+      "name": "fetch-pr",
+      "file": "skills/fetch-pr.md",
+      "description": "Fetches the latest open PR diff from a GitHub repo via the API",
+      "tags": ["github", "fetch", "pr", "diff"]
+    },
+    {
+      "name": "code-reviewer",
+      "file": "skills/code-reviewer.md",
+      "description": "Reviews a fetched PR diff for bugs, security issues, and style problems",
+      "tags": ["review", "code", "bugs", "security", "quality"]
+    },
+    {
+      "name": "report-writer",
+      "file": "skills/report-writer.md",
+      "description": "Writes a structured markdown review report and optionally posts it as a GitHub PR comment",
+      "tags": ["report", "markdown", "github", "comment", "publish"]
+    },
+    {
+      "name": "skill-creator",
+      "file": "skills/skill-creator.md",
+      "description": "Drafts a new skill file when the agent encounters a task with no matching skill",
+      "tags": ["meta", "skill", "create", "draft", "new"]
+    }
+  ],
+  "pending": []
+}

@@ -12,6 +12,7 @@ import json
 import os
 import sys
 from datetime import date
+from urllib.parse import urlencode
 
 try:
     from dotenv import load_dotenv
@@ -42,6 +43,35 @@ def get(url):
         print(f"[ERROR] GitHub API {e.code}: {body}", file=sys.stderr)
         sys.exit(1)
 
+def get_page(url):
+    import urllib.request
+    import urllib.error
+    req = urllib.request.Request(url, headers=HEADERS)
+    try:
+        with urllib.request.urlopen(req) as resp:
+            return json.loads(resp.read()), resp.headers.get("Link", "")
+    except urllib.error.HTTPError as e:
+        body = e.read().decode()
+        print(f"[ERROR] GitHub API {e.code}: {body}", file=sys.stderr)
+        sys.exit(1)
+
+def has_next_page(link_header):
+    return any('rel="next"' in part for part in link_header.split(","))
+
+def get_all_pages(url, params=None):
+    params = dict(params or {})
+    params["per_page"] = 100
+
+    items = []
+    page = 1
+    while True:
+        params["page"] = page
+        data, link_header = get_page(f"{url}?{urlencode(params)}")
+        items.extend(data)
+        if not has_next_page(link_header):
+            return items
+        page += 1
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo", required=True, help="owner/repo")
@@ -61,9 +91,9 @@ def main():
         pr_number = prs[0]["number"]
         print(f"  -> Using PR #{pr_number}")
 
-    pr    = get(f"{base}/pulls/{pr_number}")
-    files = get(f"{base}/pulls/{pr_number}/files?per_page=100")
-    commits = get(f"{base}/pulls/{pr_number}/commits?per_page=100")
+    pr      = get(f"{base}/pulls/{pr_number}")
+    files   = get_all_pages(f"{base}/pulls/{pr_number}/files")
+    commits = get_all_pages(f"{base}/pulls/{pr_number}/commits")
 
     files_changed = []
     for f in files:

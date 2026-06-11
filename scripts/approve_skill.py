@@ -79,11 +79,11 @@ def main():
         import chromadb
         client     = chromadb.PersistentClient(path=".chroma")
         collection = client.get_or_create_collection("skills")
-        doc = f"{args.name}. {new_entry['description']}. tags: {' '.join(new_entry.get('tags', []))}"
+        doc = f"{skill_name}. {new_entry['description']}. tags: {' '.join(new_entry.get('tags', []))}"
         collection.upsert(
-            ids=[args.name],
+            ids=[skill_name],
             documents=[doc],
-            metadatas=[{"file": new_entry["file"], "name": args.name}]
+            metadatas=[{"file": new_entry["file"], "name": skill_name}]
         )
         print(f"[OK] Indexed into Chroma automatically.")
     except Exception as e:

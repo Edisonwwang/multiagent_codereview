@@ -1,56 +1,89 @@
 """
 search_skills.py
-Searches skills-registry.json for skills matching a query.
-Text-based for now 鈥?will be replaced with Chroma vector search in Phase 3.
+Semantic skill search using Chroma vector DB.
+Falls back to text search if Chroma index does not exist yet.
 
 Usage:
   python scripts/search_skills.py --query "review docker files"
-  python scripts/search_skills.py --query "post github comment" --top 3
+  python scripts/search_skills.py --query "check dependencies" --top 3
 """
 
 import argparse
 import json
+import os
 
 REGISTRY_PATH = "agents/skills-registry.json"
+CHROMA_PATH   = ".chroma"
 
-def score(skill: dict, query: str) -> int:
-    """Simple keyword match score."""
+def text_search(skills, query, top):
+    """Fallback: simple keyword match."""
     q_words = query.lower().split()
-    text    = (
-        skill["name"].lower() + " " +
-        skill["description"].lower() + " " +
-        " ".join(skill.get("tags", []))
-    )
-    return sum(1 for word in q_words if word in text)
+    def score(skill):
+        text = skill["name"] + " " + skill["description"] + " " + " ".join(skill.get("tags", []))
+        return sum(1 for w in q_words if w in text.lower())
+    results = sorted(skills, key=score, reverse=True)
+    results = [s for s in results if score(s) > 0]
+    return results[:top]
+
+def chroma_search(query, top):
+    """Semantic search via Chroma."""
+    import chromadb
+    client     = chromadb.PersistentClient(path=CHROMA_PATH)
+    collection = client.get_or_create_collection("skills")
+    if collection.count() == 0:
+        return None
+    results = collection.query(query_texts=[query], n_results=min(top, collection.count()))
+    skills  = []
+    for i, meta in enumerate(results["metadatas"][0]):
+        skills.append({
+            "name":     meta["name"],
+            "file":     meta["file"],
+            "distance": results["distances"][0][i],
+        })
+    return skills
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--query", required=True, help="what you are looking for")
-    parser.add_argument("--top",   type=int, default=3, help="number of results to return")
+    parser.add_argument("--query", required=True)
+    parser.add_argument("--top",   type=int, default=3)
     args = parser.parse_args()
 
     with open(REGISTRY_PATH) as f:
         registry = json.load(f)
+    active = registry.get("active", [])
 
-    # Only search active skills 鈥?never suggest pending ones
-    results = [
-        (score(skill, args.query), skill)
-        for skill in registry["active"]
-    ]
-    results.sort(key=lambda x: x[0], reverse=True)
-    results = [(s, sk) for s, sk in results if s > 0]
+    # Try Chroma first
+    use_chroma = os.path.exists(CHROMA_PATH)
+    results    = None
+
+    if use_chroma:
+        try:
+            results = chroma_search(args.query, args.top)
+        except Exception as e:
+            print(f"[WARN] Chroma search failed ({e}), falling back to text search.")
 
     if not results:
-        print(f"[NO MATCH] No active skills found for: '{args.query}'")
-        print("  鈫?Consider running the skill-creator to draft a new skill.")
+        # Fallback to text search
+        matched = text_search(active, args.query, args.top)
+        if not matched:
+            print(f"[NO MATCH] No skills found for: '{args.query}'")
+            print("  -> Consider running skill-creator to draft a new skill.")
+            return
+        print(f"\n[text search] Top {len(matched)} result(s) for '{args.query}':\n")
+        for s in matched:
+            skill_meta = next((x for x in active if x["name"] == s["name"]), s)
+            print(f"  - {s['name']}")
+            print(f"    {skill_meta.get('description', '')}")
+            print(f"    File: {skill_meta.get('file', s.get('file', ''))}\n")
         return
 
-    print(f"\nTop {min(args.top, len(results))} skill(s) for '{args.query}':\n")
-    for i, (sc, skill) in enumerate(results[:args.top], 1):
-        print(f"  {i}. {skill['name']}  (score: {sc})")
-        print(f"     {skill['description']}")
-        print(f"     File: {skill['file']}")
-        print()
+    # Chroma results
+    print(f"\n[semantic search] Top {len(results)} result(s) for '{args.query}':\n")
+    for r in results:
+        skill_meta = next((x for x in active if x["name"] == r["name"]), {})
+        print(f"  - {r['name']}  (distance: {r['distance']:.4f})")
+        print(f"    {skill_meta.get('description', '')}")
+        print(f"    File: {r['file']}\n")
 
 if __name__ == "__main__":
     main()

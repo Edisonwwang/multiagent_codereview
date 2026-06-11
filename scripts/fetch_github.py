@@ -63,6 +63,7 @@ def main():
 
     pr    = get(f"{base}/pulls/{pr_number}")
     files = get(f"{base}/pulls/{pr_number}/files?per_page=100")
+    commits = get(f"{base}/pulls/{pr_number}/commits?per_page=100")
 
     files_changed = []
     for f in files:
@@ -72,6 +73,17 @@ def main():
             "additions": f["additions"],
             "deletions": f["deletions"],
             "patch":     f.get("patch", ""),
+        })
+
+    commit_entries = []
+    for commit in commits:
+        commit_data = commit["commit"]
+        author = commit_data.get("author") or {}
+        commit_entries.append({
+            "sha":     commit["sha"][:7],
+            "message": commit_data.get("message", ""),
+            "author":  author.get("name", ""),
+            "date":    author.get("date", ""),
         })
 
     output = {
@@ -84,6 +96,7 @@ def main():
         "head_branch":   pr["head"]["ref"],
         "fetched_date":  str(date.today()),
         "files_changed": files_changed,
+        "commits":       commit_entries,
     }
 
     os.makedirs("outputs/reviews", exist_ok=True)
@@ -95,6 +108,7 @@ def main():
 
     print(f"[OK] Saved diff -> {path}")
     print(f"     {len(files_changed)} file(s) changed in PR #{pr_number}: {pr['title']}")
+    print(f"     {len(commit_entries)} commit(s) included")
 
 if __name__ == "__main__":
     main()

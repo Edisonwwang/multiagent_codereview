@@ -5,7 +5,14 @@ Run automatically by Claude Code on startup via CLAUDE.md.
 """
 
 import json
+import os
 from datetime import datetime, date
+
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
 
 SCHEDULE_PATH = "agents/schedule.json"
 STATE_PATH    = "agents/review_state.json"
@@ -17,6 +24,9 @@ def days_since(date_str):
     return (date.today() - last).days
 
 def main():
+    if not os.getenv("GITHUB_TOKEN"):
+        print("  WARNING: GITHUB_TOKEN not set in .env  fetching private repos will fail")
+
     with open(SCHEDULE_PATH) as f:
         schedule = json.load(f)
     with open(STATE_PATH) as f:

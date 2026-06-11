@@ -59,7 +59,9 @@ Do NOT trigger this skill if an existing skill can handle the task even partiall
 
 7. Tell Edison:
    "New skill drafted: skills/pending/{skill-name}.md
-   Open it in Obsidian or any editor, review it, and move it to skills/ to activate.
+   Open it in Obsidian or any editor, review it, then run:
+   python scripts/approve_skill.py --name {skill-name}
+   This moves it to skills/, updates the registry, and indexes it into Chroma.
    I will not use this skill until you approve it."
 
 ---

@@ -1,9 +1,9 @@
 # Multiagent Code Reviewer
 
 A multi-agent code review workspace for reviewing GitHub pull requests with
-Codex or Claude Code. It fetches PR diffs, reviews changed lines against a
-repeatable checklist, writes a markdown report, and can post that report back to
-GitHub when a token is configured.
+Codex or Claude Code. It fetches PR diffs and commit metadata, selects the
+right review skill through semantic search, writes markdown reports, and can
+post those reports back to GitHub when a token is configured.
 
 The optional pixel-art office UI is provided by
 [pixtuoid](https://ivanwng97.github.io/pixtuoid/). Pixtuoid is installed
@@ -14,13 +14,21 @@ source code.
 
 ## What It Does
 
-Three agents work in sequence to review any GitHub PR:
+The system uses a self-expanding skill library tracked in
+`agents/skills-registry.json`. Active skills live in `skills/`; new generated
+skills are drafted into `skills/pending/` and must be approved before use.
 
-| Agent | Skill File | Job |
+Core pipeline skills:
+
+| Skill | File | Job |
 |---|---|---|
-| Fetcher | `skills/fetch-pr.md` | Pulls the PR diff from the GitHub API |
-| Reviewer | `skills/code-reviewer.md` | Analyses changed lines for bugs, security issues, quality, and style |
-| Reporter | `skills/report-writer.md` | Writes a structured report and can post it as a PR comment |
+| `fetch-pr` | `skills/fetch-pr.md` | Fetches PR diff and commit metadata from GitHub |
+| `code-reviewer` | `skills/code-reviewer.md` | Reviews changed lines for bugs, security, quality, and style |
+| `report-writer` | `skills/report-writer.md` | Writes a structured report and can post it as a PR comment |
+| `skill-creator` | `skills/skill-creator.md` | Drafts new pending skills when no active skill matches |
+
+Specialized review skills cover dependencies, tests, summaries, security,
+complexity, documentation, performance, commit messages, changelogs, and Docker.
 
 ---
 
@@ -28,27 +36,36 @@ Three agents work in sequence to review any GitHub PR:
 
 ```text
 code-reviewer-agent/
-|-- CLAUDE.md                  # Claude Code startup instructions
-|-- .env.example               # Environment template
-|-- .env                       # Your local tokens, never committed
-|
-|-- skills/
-|   |-- fetch-pr.md            # Agent 1: fetch PR diff from GitHub
-|   |-- code-reviewer.md       # Agent 2: review the code
-|   `-- report-writer.md       # Agent 3: write and post the report
+|-- CLAUDE.md                    # Claude Code startup instructions
+|-- .env.example                 # Environment template
+|-- .env                         # Local tokens, never committed
 |
 |-- agents/
-|   |-- schedule.json          # What repos to review and how often
-|   `-- review_state.json      # Memory of what has been reviewed
+|   |-- schedule.json            # What repos to review and how often
+|   |-- review_state.json        # Memory of what has been reviewed
+|   `-- skills-registry.json     # Active and pending skill registry
+|
+|-- skills/
+|   |-- pending/                 # Approval gate: not used until approved
+|   |-- fetch-pr.md
+|   |-- code-reviewer.md
+|   |-- report-writer.md
+|   |-- skill-creator.md
+|   `-- *.md                     # Other active review skills
 |
 |-- scripts/
-|   |-- briefing.py            # Startup briefing
-|   |-- fetch_github.py        # Calls GitHub API and saves diff JSON
-|   |-- post_review_comment.py # Posts report as GitHub PR comment
-|   `-- update_schedule.py     # Updates state after a review
+|   |-- briefing.py              # Startup briefing and token warning
+|   |-- fetch_github.py          # Calls GitHub API and saves diff JSON
+|   |-- search_skills.py         # Semantic Chroma search with text fallback
+|   |-- index_skills.py          # Rebuilds the Chroma skill index
+|   |-- create_skill.py          # Drafts pending skill templates
+|   |-- approve_skill.py         # Promotes pending skills and auto-indexes them
+|   |-- post_review_comment.py   # Posts report as GitHub PR comment
+|   `-- update_schedule.py       # Updates state after a review
 |
+|-- .chroma/                     # Local Chroma vector DB, git-ignored
 `-- outputs/
-    `-- reviews/               # Generated diffs and reports, git-ignored
+    `-- reviews/                 # Generated diffs and reports, git-ignored
 ```
 
 ---
@@ -66,13 +83,37 @@ After installation, confirm it is available:
 codex --version
 ```
 
-### 2. Install pixtuoid
+### 2. Install Python Dependencies
+
+Chroma powers semantic skill search:
+
+```bash
+pip install chromadb
+```
+
+### 3. Build the Skill Index
+
+Run this once after setup, and again whenever active skills are changed manually:
+
+```bash
+python scripts/index_skills.py
+```
+
+Expected output includes:
+
+```text
+[OK] Indexed 14 skills into Chroma at .chroma/
+```
+
+`scripts/approve_skill.py` indexes newly approved skills automatically.
+
+### 4. Install pixtuoid
 
 ```bash
 npm install -g pixtuoid
 ```
 
-### 3. Install pixtuoid hooks
+### 5. Install pixtuoid hooks
 
 Pixtuoid hooks are a one-time setup step, not something you run every session.
 
@@ -95,7 +136,7 @@ If you are unsure which targets are supported on your machine, run:
 pixtuoid install-hooks --target all
 ```
 
-### 4. Configure environment
+### 6. Configure Environment
 
 ```bash
 cp .env.example .env
@@ -114,10 +155,11 @@ Token scopes:
 | Public only | `public_repo` |
 | Private repos | `repo` |
 
-Without `GITHUB_TOKEN`, fetching public PRs can still work, but posting review
-comments will fail.
+Without `GITHUB_TOKEN`, fetching public PRs can still work, but private repo
+fetching and posting review comments will fail. `scripts/briefing.py` warns when
+the token is missing.
 
-### 5. Set your target repo
+### 7. Set Your Target Repo
 
 Edit both files and replace `owner/your-repo` with your real repo:
 
@@ -138,7 +180,7 @@ Example:
 
 Run these whenever you want to use the UI and agent.
 
-### Terminal 1: Start the pixel office UI
+### Terminal 1: Start the Pixel Office UI
 
 ```bash
 pixtuoid run
@@ -146,7 +188,7 @@ pixtuoid run
 
 Leave this terminal open while you want the UI running. Stop it with `Ctrl+C`.
 
-### Terminal 2: Start Codex in this workspace
+### Terminal 2: Start Codex in This Workspace
 
 ```bash
 cd code-reviewer-agent
@@ -167,6 +209,35 @@ outputs/reviews/
 
 ---
 
+## Skill Search and Approval
+
+Search active skills semantically:
+
+```bash
+python scripts/search_skills.py --query "docker container security"
+```
+
+When `.chroma/` exists, results are shown as `[semantic search]` with distance
+scores. Lower distance means a closer match. If the Chroma index is missing or
+fails, `search_skills.py` falls back to keyword text search.
+
+Draft a new pending skill:
+
+```bash
+python scripts/create_skill.py --name new-skill --description "What it does" --tags "tag1,tag2"
+```
+
+Approve a reviewed pending skill:
+
+```bash
+python scripts/approve_skill.py --name new-skill
+```
+
+Approval moves `skills/pending/new-skill.md` to `skills/new-skill.md`, updates
+`agents/skills-registry.json`, and auto-indexes the skill into Chroma.
+
+---
+
 ## Manual Pipeline Commands
 
 You can also run the deterministic parts directly.
@@ -174,6 +245,7 @@ You can also run the deterministic parts directly.
 ```bash
 python scripts/briefing.py
 python scripts/fetch_github.py --repo owner/repo
+python scripts/search_skills.py --query "review this pull request"
 python scripts/update_schedule.py --repo owner/repo --pr 1 --status reviewed
 python scripts/post_review_comment.py --repo owner/repo --pr 1
 ```
@@ -188,7 +260,9 @@ fetched diff JSON.
 The local review pipeline works when:
 
 - Python is installed.
-- The repo has an open PR.
+- `chromadb` is installed.
+- The Chroma index has been built with `python scripts/index_skills.py`.
+- The repo has an open PR, or you pass `--pr`.
 - `scripts/fetch_github.py` can reach the GitHub API.
 - Codex reviews the fetched diff and writes the report.
 
@@ -206,15 +280,18 @@ reported that Codex hooks are not yet supported on Windows.
 
 ## How It Works
 
-Each "agent" is a markdown SOP that tells Codex or Claude Code what to do.
+Each skill is a markdown SOP that tells Codex or Claude Code what to do.
 Python scripts handle deterministic operations such as API calls, file writes,
-and state updates, while the AI performs the judgment-heavy review step.
+skill indexing, approval, and state updates, while the AI performs the
+judgment-heavy review step.
 
 ```text
-CLAUDE.md      = Claude Code startup instructions
-Skill files    = Step-by-step SOPs per role
-Python scripts = Repeatable tool calls
-State JSON     = Memory between sessions
+CLAUDE.md             = Claude Code startup instructions
+skills/*.md           = Step-by-step SOPs per role
+agents/skills-registry.json = Active and pending skill source of truth
+scripts/search_skills.py    = Semantic Chroma search with text fallback
+scripts/index_skills.py     = Rebuilds the local vector index
+State JSON            = Memory between sessions
 ```
 
 ---
@@ -222,6 +299,5 @@ State JSON     = Memory between sessions
 ## Roadmap
 
 - [x] Phase 1 - Core review pipeline: fetch, review, report
-- [ ] Phase 2 - Obsidian vault sync and self-expanding skill library
-- [ ] Phase 3 - Human approval gate for new auto-generated skills
-- [ ] Phase 4 - Vector DB for semantic skill retrieval at scale
+- [x] Phase 2 - Obsidian vault sync and self-expanding skill library
+- [x] Phase 3 - Chroma vector DB for semantic skill retrieval

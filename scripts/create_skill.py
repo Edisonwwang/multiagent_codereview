@@ -101,7 +101,7 @@ def main():
         print(f"[OK] Registered in skills-registry.json under pending")
 
     print(f"\n  Next: open {filepath}, fill in all sections,")
-    print(f"        then move to skills/ to activate.")
+    print(f"        then run: python scripts/approve_skill.py --name {skill_name}")
 
 if __name__ == "__main__":
     main()

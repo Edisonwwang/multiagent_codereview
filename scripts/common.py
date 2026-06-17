@@ -4,7 +4,6 @@ Shared filesystem and JSON helpers for repository scripts.
 
 import json
 import os
-import re
 import tempfile
 from pathlib import Path
 
@@ -20,8 +19,8 @@ SCHEDULE_PATH = AGENTS_DIR / "schedule.json"
 STATE_PATH = AGENTS_DIR / "review_state.json"
 REGISTRY_PATH = AGENTS_DIR / "skills-registry.json"
 
-REPO_RE = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")
-SKILL_NAME_RE = re.compile(r"^[a-z0-9][a-z0-9-]*$")
+SAFE_REPO_CHARS = set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_.-")
+SAFE_SKILL_CHARS = set("abcdefghijklmnopqrstuvwxyz0123456789-")
 
 
 def repo_slug(repo):
@@ -31,13 +30,22 @@ def repo_slug(repo):
 
 def normalize_skill_name(name):
     skill_name = name.lower().replace(" ", "-")
-    if not SKILL_NAME_RE.fullmatch(skill_name):
+    if (
+        not skill_name
+        or skill_name[0] == "-"
+        or any(char not in SAFE_SKILL_CHARS for char in skill_name)
+    ):
         raise ValueError("skill name must use lowercase letters, numbers, and hyphens")
     return skill_name
 
 
 def validate_repo(repo):
-    if not REPO_RE.fullmatch(repo) or any(part in {".", ".."} for part in repo.split("/")):
+    parts = repo.split("/")
+    if (
+        len(parts) != 2
+        or any(part in {"", ".", ".."} for part in parts)
+        or any(char not in SAFE_REPO_CHARS for part in parts for char in part)
+    ):
         raise ValueError("repo must be in owner/repo format")
     return repo
 

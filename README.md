@@ -1,14 +1,9 @@
 # Multiagent Code Reviewer
 
 A multi-agent code review workspace for reviewing GitHub pull requests with
-Codex or Claude Code. It fetches PR diffs and commit metadata, selects the
-right review skill through semantic search, writes markdown reports, and can
-post those reports back to GitHub when a token is configured.
-
-The optional pixel-art office UI is provided by
-[pixtuoid](https://ivanwng97.github.io/pixtuoid/). Pixtuoid is installed
-separately; this repository contains the review agent workspace, not the UI
-source code.
+Codex or Claude Code. It fetches PR diffs and commit metadata, selects review
+skills, writes markdown reports, and can post those reports back to GitHub when
+a token is configured.
 
 ---
 
@@ -40,7 +35,6 @@ code-reviewer-agent/
 |-- .env.example                 # Environment template
 |-- .env                         # Local tokens, never committed
 |-- requirements.txt             # Runtime Python dependencies
-|-- requirements-dev.txt         # Developer dependency entry point
 |
 |-- agents/
 |   |-- schedule.json            # What repos to review and how often
@@ -61,8 +55,8 @@ code-reviewer-agent/
 |   |-- fetch_github.py          # Calls GitHub API and saves diff JSON
 |   |-- github_client.py         # Shared GitHub REST client and pagination
 |   |-- orchestrator.py          # Fetches PR data, tracks review outputs, aggregates report
-|   |-- search_skills.py         # Semantic Chroma search with text fallback
-|   |-- index_skills.py          # Rebuilds the Chroma skill index
+|   |-- search_skills.py         # Keyword skill search, optional Chroma semantic search
+|   |-- index_skills.py          # Rebuilds the optional Chroma skill index
 |   |-- create_skill.py          # Drafts pending skill templates
 |   |-- approve_skill.py         # Promotes pending skills and auto-indexes them
 |   |-- post_review_comment.py   # Posts report as GitHub PR comment
@@ -93,21 +87,14 @@ codex --version
 
 ### 2. Install Python Dependencies
 
-Chroma powers semantic skill search:
-
 ```bash
 pip install -r requirements.txt
 ```
 
-For development and test work, install the development dependency entry point:
+### 3. Optional: Build the Semantic Skill Index
 
-```bash
-pip install -r requirements-dev.txt
-```
-
-### 3. Build the Skill Index
-
-Run this once after setup, and again whenever active skills are changed manually:
+Keyword skill search works without this. Build the Chroma index only if you want
+semantic skill search with `scripts/search_skills.py --semantic`:
 
 ```bash
 python scripts/index_skills.py
@@ -121,36 +108,7 @@ Expected output includes:
 
 `scripts/approve_skill.py` indexes newly approved skills automatically.
 
-### 4. Install pixtuoid
-
-```bash
-npm install -g pixtuoid
-```
-
-### 5. Install pixtuoid hooks
-
-Pixtuoid hooks are a one-time setup step, not something you run every session.
-
-On macOS/Linux, Codex hooks may be available:
-
-```bash
-pixtuoid install-hooks --target codex
-```
-
-On Windows, pixtuoid currently reports that Codex hooks are not supported yet.
-If you use Claude Code on Windows, install Claude hooks instead:
-
-```bash
-pixtuoid install-hooks --target claude
-```
-
-If you are unsure which targets are supported on your machine, run:
-
-```bash
-pixtuoid install-hooks --target all
-```
-
-### 6. Configure Environment
+### 4. Configure Environment
 
 ```bash
 cp .env.example .env
@@ -173,7 +131,7 @@ Without `GITHUB_TOKEN`, fetching public PRs can still work, but private repo
 fetching and posting review comments will fail. `scripts/briefing.py` warns when
 the token is missing.
 
-### 7. Set Your Target Repo
+### 5. Set Your Target Repo
 
 Edit both files and replace `owner/your-repo` with your real repo:
 
@@ -192,17 +150,7 @@ Example:
 
 ## Running Each Session
 
-Run these whenever you want to use the UI and agent.
-
-### Terminal 1: Start the Pixel Office UI
-
-```bash
-pixtuoid run
-```
-
-Leave this terminal open while you want the UI running. Stop it with `Ctrl+C`.
-
-### Terminal 2: Start Codex in This Workspace
+Start Codex in this workspace:
 
 ```bash
 cd code-reviewer-agent
@@ -225,15 +173,19 @@ outputs/reviews/
 
 ## Skill Search and Approval
 
-Search active skills semantically:
+Search active skills:
 
 ```bash
 python scripts/search_skills.py --query "docker container security"
 ```
 
-When `.chroma/` exists, results are shown as `[semantic search]` with distance
-scores. Lower distance means a closer match. If the Chroma index is missing or
-fails, `search_skills.py` falls back to keyword text search.
+Keyword search is the default. To use Chroma semantic search, first build the
+index, then pass `--semantic`:
+
+```bash
+python scripts/index_skills.py
+python scripts/search_skills.py --query "docker container security" --semantic
+```
 
 Draft a new pending skill:
 
@@ -301,8 +253,6 @@ and pending skill creation.
 The local review pipeline works when:
 
 - Python is installed.
-- `chromadb` is installed.
-- The Chroma index has been built with `python scripts/index_skills.py`.
 - The repo has an open PR, or you pass `--pr`.
 - `scripts/fetch_github.py` can reach the GitHub API.
 - Codex reviews the fetched diff and writes the report.
@@ -314,10 +264,6 @@ Posting back to GitHub additionally requires:
 - `.env` exists.
 - `GITHUB_TOKEN` is set.
 - The token has permission to comment on the PR.
-
-Pixtuoid UI integration additionally depends on hook support for your CLI and
-operating system. As of the local Windows test for this project, pixtuoid
-reported that Codex hooks are not yet supported on Windows.
 
 ---
 
@@ -334,8 +280,8 @@ skills/*.md           = Step-by-step SOPs per role
 agents/skills-registry.json = Active and pending skill source of truth
 scripts/common.py           = Shared paths and JSON/text file helpers
 scripts/github_client.py    = Shared GitHub REST client
-scripts/search_skills.py    = Semantic Chroma search with text fallback
-scripts/index_skills.py     = Rebuilds the local vector index
+scripts/search_skills.py    = Keyword search, optional Chroma semantic search
+scripts/index_skills.py     = Rebuilds the optional local vector index
 State JSON            = Memory between sessions
 ```
 
@@ -346,3 +292,16 @@ State JSON            = Memory between sessions
 - [x] Phase 1 - Core review pipeline: fetch, review, report
 - [x] Phase 2 - Obsidian vault sync and self-expanding skill library
 - [x] Phase 3 - Chroma vector DB for semantic skill retrieval
+- [x] Phase 3 - Optional Chroma vector DB for semantic skill retrieval
+
+---
+
+## Optional UI
+
+The optional pixel-art office UI is provided by
+[pixtuoid](https://ivanwng97.github.io/pixtuoid/) and is installed separately:
+
+```bash
+npm install -g pixtuoid
+pixtuoid run
+```

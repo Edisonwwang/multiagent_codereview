@@ -6,7 +6,6 @@ From repo root:
 
 ```bash
 pip install -r requirements.txt
-python scripts/index_skills.py
 ```
 
 Create `.env`:
@@ -115,7 +114,8 @@ Preconditions:
 python scripts/search_skills.py --query "docker container security"
 ```
 
-If Chroma is unavailable, the script automatically falls back to keyword search.
+Keyword search is the default. Use `--semantic` after rebuilding the optional
+Chroma index.
 
 ## Rebuild Skill Index
 

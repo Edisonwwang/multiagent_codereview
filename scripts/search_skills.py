@@ -1,11 +1,11 @@
 """
 search_skills.py
-Semantic skill search using Chroma vector DB.
-Falls back to text search if Chroma index does not exist yet.
+Keyword skill search with optional Chroma semantic search.
 
 Usage:
   python scripts/search_skills.py --query "review docker files"
   python scripts/search_skills.py --query "check dependencies" --top 3
+  python scripts/search_skills.py --query "check dependencies" --semantic
 """
 
 import argparse
@@ -13,14 +13,16 @@ import argparse
 from common import CHROMA_DIR, REGISTRY_PATH, load_json
 
 def text_search(skills, query, top):
-    """Fallback: simple keyword match."""
+    """Simple keyword match."""
     q_words = query.lower().split()
-    def score(skill):
+    scored = []
+    for skill in skills:
         text = skill["name"] + " " + skill["description"] + " " + " ".join(skill.get("tags", []))
-        return sum(1 for w in q_words if w in text.lower())
-    results = sorted(skills, key=score, reverse=True)
-    results = [s for s in results if score(s) > 0]
-    return results[:top]
+        score = sum(1 for w in q_words if w in text.lower())
+        if score:
+            scored.append((score, skill))
+    scored.sort(key=lambda item: item[0], reverse=True)
+    return [skill for _, skill in scored[:top]]
 
 def chroma_search(query, top):
     """Semantic search via Chroma."""
@@ -43,23 +45,21 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--query", required=True)
     parser.add_argument("--top",   type=int, default=3)
+    parser.add_argument("--semantic", action="store_true", help="use Chroma semantic search when available")
     args = parser.parse_args()
 
     registry = load_json(REGISTRY_PATH)
     active = registry.get("active", [])
 
-    # Try Chroma first
-    use_chroma = CHROMA_DIR.exists()
-    results    = None
-
-    if use_chroma:
+    if args.semantic and CHROMA_DIR.exists():
         try:
             results = chroma_search(args.query, args.top)
         except Exception as e:
             print(f"[WARN] Chroma search failed ({e}), falling back to text search.")
+    else:
+        results = None
 
     if not results:
-        # Fallback to text search
         matched = text_search(active, args.query, args.top)
         if not matched:
             print(f"[NO MATCH] No skills found for: '{args.query}'")

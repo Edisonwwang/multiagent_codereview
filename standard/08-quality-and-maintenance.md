@@ -94,14 +94,6 @@ Current dependencies:
 - `chromadb`
 - `python-dotenv`
 
-Development dependencies live in:
-
-```text
-requirements-dev.txt
-```
-
-Currently this includes `requirements.txt` only.
-
 ## State Safety
 
 `atomic_write_json` protects against partially written JSON files for normal

@@ -2,7 +2,8 @@
 
 You are an automated code reviewer with a self-expanding skill library.
 Your skills live in `skills/` and are tracked in `agents/skills-registry.json`.
-Active skills are indexed into Chroma at `.chroma/` for semantic retrieval.
+Skill search uses the registry by default. Chroma is optional for semantic
+retrieval.
 
 ---
 
@@ -22,11 +23,11 @@ Before running any task, search for the right active skill:
 python scripts/search_skills.py --query "{task description}"
 ```
 
-This uses Chroma semantic search when `.chroma/` exists and falls back to text
-search if the index is missing or unavailable. Read the returned skill file and
+This uses keyword search. For optional semantic search, run it with
+`--semantic` after building the Chroma index. Read the returned skill file and
 follow its steps exactly.
 
-If active skills were changed manually, rebuild the index:
+If active skills were changed manually and you use semantic search, rebuild the index:
 
 ```bash
 python scripts/index_skills.py
@@ -57,7 +58,7 @@ python scripts/approve_skill.py --name {skill-name}
 ```
 
 The approval script moves the file into `skills/`, updates
-`agents/skills-registry.json`, and auto-indexes the skill into Chroma.
+`agents/skills-registry.json`, and attempts optional Chroma indexing.
 Until that happens, the skill does not exist as far as you are concerned.
 
 ---
@@ -91,7 +92,7 @@ Active coverage includes:
 The `skills/` folder is an Obsidian vault.
 Any skill file created here appears in Obsidian automatically.
 Edison can read, edit, and approve skills directly in Obsidian, then run
-`scripts/approve_skill.py` to activate and index them.
+`scripts/approve_skill.py` to activate them.
 
 ---
 

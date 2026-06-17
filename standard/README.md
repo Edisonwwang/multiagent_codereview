@@ -5,7 +5,7 @@ files before changing behavior:
 
 1. `01-overview.md` - purpose, mental model, and non-goals.
 2. `02-repository-map.md` - folder-by-folder and file-by-file map.
-3. `03-runtime-architecture.md` - how scripts, skills, state, Chroma, and GitHub fit together.
+3. `03-runtime-architecture.md` - how scripts, skills, state, optional Chroma, and GitHub fit together.
 4. `04-data-contracts.md` - JSON schemas, generated artifact names, and required fields.
 5. `05-script-reference.md` - command reference and implementation notes for every script.
 6. `06-skill-system.md` - active skills, approval gate, registry, and skill lifecycle.

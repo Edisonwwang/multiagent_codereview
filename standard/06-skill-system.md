@@ -28,7 +28,7 @@ Lifecycle:
 5. Human reviews/edits pending markdown.
 6. Approve with `scripts/approve_skill.py`.
 7. Approved skill moves to `skills/` and registry `active[]`.
-8. Chroma is updated automatically if possible.
+8. Chroma is updated automatically if possible, for optional semantic search.
 
 ## Active Skills
 
@@ -144,8 +144,8 @@ python scripts/search_skills.py --query "{task description}"
 
 Search uses:
 
-- Chroma if indexed and available.
-- keyword fallback otherwise.
+- keyword matching by default.
+- Chroma only when `--semantic` is passed.
 
 ## Skill Registry Consistency Rules
 

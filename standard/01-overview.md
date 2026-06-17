@@ -10,8 +10,8 @@ scripts to review GitHub pull requests.
 The system has four major parts:
 
 - `skills/`: markdown standard operating procedures for AI review tasks.
-- `scripts/`: deterministic Python scripts for GitHub, state, Chroma indexing,
-  and skill lifecycle operations.
+- `scripts/`: deterministic Python scripts for GitHub, state, optional Chroma
+  indexing, and skill lifecycle operations.
 - `agents/`: JSON state and registry files that define scheduled repos,
   review history, and active/pending skills.
 - `outputs/reviews/`: generated diff JSON files and markdown review reports.
@@ -22,9 +22,8 @@ The normal user flow is:
 
 1. Configure `.env` with `GITHUB_TOKEN`.
 2. Install dependencies from `requirements.txt`.
-3. Build the Chroma skill index with `python scripts/index_skills.py`.
-4. Ask Codex or Claude to review a repo or PR.
-5. The AI runs scripts, reads skills, writes a report, and optionally posts it
+3. Ask Codex or Claude to review a repo or PR.
+4. The AI runs scripts, reads skills, writes a report, and optionally posts it
    to GitHub.
 
 ## What The AI Does
@@ -47,7 +46,7 @@ The scripts handle things that should not be left to model memory:
 - Pagination for PR files and commits.
 - Loading `.env`.
 - Atomic JSON state writes.
-- Chroma skill indexing and lookup.
+- Keyword skill lookup and optional Chroma semantic lookup.
 - Creating and approving skill files.
 - Posting generated markdown reviews as PR comments.
 
@@ -57,7 +56,7 @@ This repo does not currently provide:
 
 - A packaged CLI entry point.
 - A web server.
-- A database beyond local JSON files and local Chroma storage.
+- A database beyond local JSON files and optional local Chroma storage.
 - Concurrent multi-user state safety.
 - Full integration tests against live GitHub.
 - A complete review engine independent of Codex or Claude.

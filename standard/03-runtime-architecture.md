@@ -33,7 +33,7 @@ Scripts are responsible for deterministic side effects:
 
 - reading and writing JSON.
 - GitHub API fetch/post calls.
-- Chroma indexing/search calls.
+- skill search and optional Chroma indexing/search calls.
 - state mutation.
 - skill creation and approval mechanics.
 
@@ -86,10 +86,11 @@ Important values/functions:
 Failure behavior: GitHub HTTP/URL failures print a message to stderr and exit
 with status 1. This matches the command-line script style in the repo.
 
-## Chroma Skill Search
+## Skill Search
 
-Chroma is used only for semantic retrieval of skill metadata, not for review
-state or report storage.
+Keyword search over `agents/skills-registry.json` is the default. Chroma is
+optional semantic retrieval for skill metadata, not review state or report
+storage.
 
 Index source:
 
@@ -99,10 +100,9 @@ agents/skills-registry.json -> active[] -> .chroma/
 
 Search flow:
 
-1. `scripts/search_skills.py` checks whether `.chroma/` exists.
-2. If it exists, it queries Chroma collection `skills`.
-3. If Chroma is empty or fails, it falls back to keyword matching over active
-   registry entries.
+1. `scripts/search_skills.py` keyword-matches active registry entries.
+2. If `--semantic` is passed and `.chroma/` exists, it tries Chroma first.
+3. If Chroma is empty or fails, it falls back to keyword matching.
 
 Chroma documents are built from skill name, description, and tags. The actual
 skill instructions remain in `skills/*.md`.

@@ -81,6 +81,7 @@ Commands:
 ```bash
 python scripts/search_skills.py --query "review docker files"
 python scripts/search_skills.py --query "check dependencies" --top 3
+python scripts/search_skills.py --query "check dependencies" --semantic
 ```
 
 Purpose:
@@ -89,8 +90,9 @@ Purpose:
 
 Search order:
 
-1. Chroma semantic search if `.chroma/` exists and collection has entries.
-2. Text keyword fallback over active skills.
+1. Keyword search over active skills by default.
+2. Chroma semantic search only when `--semantic` is passed.
+3. Text keyword fallback if Chroma is missing, empty, or fails.
 
 Text fallback score:
 
@@ -98,8 +100,8 @@ Text fallback score:
 
 Output:
 
-- Prints matching skill names, descriptions, paths, and Chroma distance when
-  semantic search is used.
+- Prints matching skill names, descriptions, and paths.
+- Prints Chroma distance when semantic search is used.
 
 ## `scripts/index_skills.py`
 
@@ -127,7 +129,6 @@ Document text:
 
 Run this:
 
-- after initial dependency setup.
 - after manually editing active skill metadata.
 - when Chroma appears stale.
 

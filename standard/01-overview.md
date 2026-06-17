@@ -7,6 +7,11 @@ web app and not a complete standalone SaaS product. It is designed to be opened
 inside Codex or Claude Code, where the AI can use markdown skills and helper
 scripts to review GitHub pull requests.
 
+It can also be installed as a local Codex plugin. The current personal plugin
+copy lives at `C:\Users\yuanzhi.wang\plugins\code-reviewer-agent` and is
+registered through `C:\Users\yuanzhi.wang\.agents\plugins\marketplace.json`.
+The source repo remains the development copy.
+
 The system has four major parts:
 
 - `skills/`: markdown standard operating procedures for AI review tasks.
@@ -25,6 +30,10 @@ The normal user flow is:
 3. Ask Codex or Claude to review a repo or PR.
 4. The AI runs scripts, reads skills, writes a report, and optionally posts it
    to GitHub.
+
+For plugin use, install/enable `code-reviewer-agent` from the personal Codex
+marketplace, then ask Codex to review a GitHub PR. The plugin wrapper skill
+delegates to the same scripts and markdown review skills.
 
 ## What The AI Does
 

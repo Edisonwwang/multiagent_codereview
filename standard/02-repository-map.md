@@ -45,6 +45,25 @@ Runtime Python dependencies:
 - `chromadb`: optional semantic skill search.
 - `python-dotenv`: load `.env` from repo root.
 
+## Personal Plugin Copy
+
+The local Codex plugin copy is outside this repo:
+
+```text
+C:\Users\yuanzhi.wang\plugins\code-reviewer-agent
+```
+
+The personal marketplace entry is outside this repo:
+
+```text
+C:\Users\yuanzhi.wang\.agents\plugins\marketplace.json
+```
+
+That plugin copy includes `.codex-plugin/plugin.json`, a plugin-native wrapper
+skill at `skills/code-reviewer-agent/SKILL.md`, and copied runtime files from
+this workspace. Treat this repo as source; refresh the plugin copy after source
+changes.
+
 ## `agents/`
 
 ### `agents/schedule.json`

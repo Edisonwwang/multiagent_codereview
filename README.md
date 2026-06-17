@@ -171,6 +171,32 @@ outputs/reviews/
 
 ---
 
+## Using The Codex Plugin
+
+This workspace has also been packaged as a local Codex plugin at:
+
+```text
+C:\Users\yuanzhi.wang\plugins\code-reviewer-agent
+```
+
+It is registered in your personal marketplace:
+
+```text
+C:\Users\yuanzhi.wang\.agents\plugins\marketplace.json
+```
+
+The plugin contains a Codex-native wrapper skill at:
+
+```text
+skills/code-reviewer-agent/SKILL.md
+```
+
+The wrapper skill points Codex back to the same review scripts and markdown
+skills used by this repo. Keep the source repo as the development copy; refresh
+the plugin folder when these scripts or skills change.
+
+---
+
 ## Skill Search and Approval
 
 Search active skills:

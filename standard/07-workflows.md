@@ -39,6 +39,26 @@ Expected result:
 - recent review history.
 - token warning if `GITHUB_TOKEN` is missing.
 
+## Use As A Codex Plugin
+
+The personal plugin copy lives at:
+
+```text
+C:\Users\yuanzhi.wang\plugins\code-reviewer-agent
+```
+
+It is registered in:
+
+```text
+C:\Users\yuanzhi.wang\.agents\plugins\marketplace.json
+```
+
+Enable `code-reviewer-agent` from Codex, then ask it to review a GitHub PR.
+The plugin wrapper skill uses the same scripts and markdown skills as this repo.
+
+After changing source files here, refresh the plugin copy before relying on the
+installed plugin.
+
 ## Review Latest Open PR
 
 User asks:

@@ -11,6 +11,7 @@ sys.path.insert(0, str(SCRIPTS_DIR))
 
 import common
 import create_skill
+import orchestrator
 import update_schedule
 
 
@@ -22,6 +23,28 @@ class CommonTests(unittest.TestCase):
             common.atomic_write_json(path, {"ok": True})
 
             self.assertEqual(json.loads(path.read_text(encoding="utf-8")), {"ok": True})
+
+
+class OrchestratorTests(unittest.TestCase):
+    def test_aggregate_report_combines_reviewer_outputs(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            paths = {
+                "security": tmp_path / "security.md",
+                "style": tmp_path / "style.md",
+            }
+            paths["security"].write_text("No security findings.\n", encoding="utf-8")
+            paths["style"].write_text("Style looks fine.\n", encoding="utf-8")
+
+            with patch.object(orchestrator, "REVIEWS_DIR", tmp_path):
+                orchestrator.aggregate_report("owner/repo", 42, paths)
+
+            report = (tmp_path / "owner_repo_pr42_review.md").read_text(encoding="utf-8")
+            self.assertIn("# Code Review - owner/repo PR #42", report)
+            self.assertIn("## Security Review", report)
+            self.assertIn("No security findings.", report)
+            self.assertIn("## Style Review", report)
+            self.assertIn("Style looks fine.", report)
 
 
 class UpdateScheduleTests(unittest.TestCase):

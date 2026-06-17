@@ -60,6 +60,7 @@ code-reviewer-agent/
 |   |-- common.py                # Shared repo paths and JSON/text helpers
 |   |-- fetch_github.py          # Calls GitHub API and saves diff JSON
 |   |-- github_client.py         # Shared GitHub REST client and pagination
+|   |-- orchestrator.py          # Fetches PR data, tracks review outputs, aggregates report
 |   |-- search_skills.py         # Semantic Chroma search with text fallback
 |   |-- index_skills.py          # Rebuilds the Chroma skill index
 |   |-- create_skill.py          # Drafts pending skill templates
@@ -257,6 +258,7 @@ You can also run the deterministic parts directly.
 
 ```bash
 python scripts/briefing.py
+python scripts/orchestrator.py --repo owner/repo --pr 1
 python scripts/fetch_github.py --repo owner/repo
 python scripts/search_skills.py --query "review this pull request"
 python scripts/update_schedule.py --repo owner/repo --pr 1 --status reviewed
@@ -265,6 +267,10 @@ python scripts/post_review_comment.py --repo owner/repo --pr 1
 
 The review-writing step is performed by Codex using the skill files and the
 fetched diff JSON.
+`orchestrator.py` keeps that boundary: it fetches the PR, writes
+`outputs/reviews/{owner}_{repo}_pr{number}_state.json`, waits for reviewer
+markdown files if `--wait` is passed, aggregates them into the final
+`*_review.md`, then updates schedule state.
 
 ---
 

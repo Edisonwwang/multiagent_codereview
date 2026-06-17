@@ -9,7 +9,7 @@ Usage:
 import argparse
 import sys
 
-from common import REVIEWS_DIR, display_path, read_text, repo_slug
+from common import REVIEWS_DIR, display_path, read_text, repo_slug, validate_repo
 from github_client import API_ROOT, GITHUB_TOKEN, post_json
 
 
@@ -18,6 +18,10 @@ def main():
     parser.add_argument("--repo", required=True)
     parser.add_argument("--pr",   required=True, type=int)
     args = parser.parse_args()
+    try:
+        validate_repo(args.repo)
+    except ValueError as e:
+        parser.error(str(e))
 
     if not GITHUB_TOKEN:
         print("[ERROR] GITHUB_TOKEN not set. Cannot post comment.", file=sys.stderr)

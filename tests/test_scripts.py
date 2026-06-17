@@ -10,6 +10,7 @@ SCRIPTS_DIR = ROOT / "scripts"
 sys.path.insert(0, str(SCRIPTS_DIR))
 
 import common
+import approve_skill
 import create_skill
 import orchestrator
 import update_schedule
@@ -24,27 +25,33 @@ class CommonTests(unittest.TestCase):
 
             self.assertEqual(json.loads(path.read_text(encoding="utf-8")), {"ok": True})
 
+    def test_validation_rejects_path_like_inputs(self):
+        with self.assertRaises(ValueError):
+            common.normalize_skill_name("../bad")
+        with self.assertRaises(ValueError):
+            common.validate_repo("owner/..")
+
 
 class OrchestratorTests(unittest.TestCase):
     def test_aggregate_report_combines_reviewer_outputs(self):
         with tempfile.TemporaryDirectory() as tmp:
             tmp_path = Path(tmp)
             paths = {
-                "security": tmp_path / "security.md",
-                "style": tmp_path / "style.md",
+                "security-scanner": tmp_path / "security.md",
+                "code-reviewer": tmp_path / "style.md",
             }
-            paths["security"].write_text("No security findings.\n", encoding="utf-8")
-            paths["style"].write_text("Style looks fine.\n", encoding="utf-8")
+            paths["security-scanner"].write_text("[CRITICAL] hardcoded token\n", encoding="utf-8")
+            paths["code-reviewer"].write_text("[WARNING] style issue\n", encoding="utf-8")
 
             with patch.object(orchestrator, "REVIEWS_DIR", tmp_path):
                 orchestrator.aggregate_report("owner/repo", 42, paths)
 
             report = (tmp_path / "owner_repo_pr42_review.md").read_text(encoding="utf-8")
             self.assertIn("# Code Review - owner/repo PR #42", report)
-            self.assertIn("## Security Review", report)
-            self.assertIn("No security findings.", report)
-            self.assertIn("## Style Review", report)
-            self.assertIn("Style looks fine.", report)
+            self.assertIn("| Critical | 1 |", report)
+            self.assertIn("| Warning | 1 |", report)
+            self.assertIn("### Security Scanner", report)
+            self.assertIn("[CRITICAL] hardcoded token", report)
 
 
 class UpdateScheduleTests(unittest.TestCase):
@@ -138,6 +145,51 @@ class CreateSkillTests(unittest.TestCase):
             self.assertNotIn("\u95b3", content)
             self.assertEqual(registry["pending"][0]["name"], "review-stuff")
             self.assertEqual(registry["pending"][0]["file"], skill_path.as_posix())
+
+
+class ApproveSkillTests(unittest.TestCase):
+    def test_approve_skill_rolls_back_file_move_when_registry_write_fails(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            pending_dir = tmp_path / "skills" / "pending"
+            active_dir = tmp_path / "skills"
+            registry_path = tmp_path / "agents" / "skills-registry.json"
+            pending_dir.mkdir(parents=True)
+            registry_path.parent.mkdir(parents=True)
+            pending_path = pending_dir / "safe-skill.md"
+            active_path = active_dir / "safe-skill.md"
+            pending_path.write_text("# Skill: safe-skill\n", encoding="utf-8")
+            registry_path.write_text(
+                json.dumps(
+                    {
+                        "active": [],
+                        "pending": [
+                            {
+                                "name": "safe-skill",
+                                "file": pending_path.as_posix(),
+                                "description": "Safe skill",
+                                "tags": [],
+                            }
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            with patch.object(approve_skill, "PENDING_SKILLS_DIR", pending_dir), patch.object(
+                approve_skill, "SKILLS_DIR", active_dir
+            ), patch.object(approve_skill, "REGISTRY_PATH", registry_path), patch.object(
+                approve_skill, "atomic_write_json", side_effect=RuntimeError("boom")
+            ), patch.object(
+                sys,
+                "argv",
+                ["approve_skill.py", "--name", "safe-skill"],
+            ):
+                with self.assertRaises(RuntimeError):
+                    approve_skill.main()
+
+            self.assertTrue(pending_path.exists())
+            self.assertFalse(active_path.exists())
 
 
 if __name__ == "__main__":

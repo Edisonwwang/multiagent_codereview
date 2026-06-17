@@ -1,8 +1,8 @@
 # Skill: fetch-pr
 
 ## Goal
-Fetch the latest open pull request (or recent commits if no PR exists) from
-a target GitHub repository and save the diff to disk for the review-code skill.
+Fetch the latest open pull request from a target GitHub repository and save the
+diff to disk for the code-reviewer skill.
 
 ---
 
@@ -23,7 +23,7 @@ a target GitHub repository and save the diff to disk for the review-code skill.
 
 3. Confirm the file was created. If the script returned an error, report it and stop.
 
-4. Tell the user: "Fetched PR #{pr_number} from {repo}. Ready to run review-code."
+4. Tell the user: "Fetched PR #{pr_number} from {repo}. Ready to run code-reviewer."
 
 ---
 
@@ -35,4 +35,4 @@ a target GitHub repository and save the diff to disk for the review-code skill.
 ## Error Handling
 - 401 Unauthorized -> remind user to set GITHUB_TOKEN in .env
 - 404 Not Found -> repo is private or does not exist, check repo name
-- No open PRs -> fall back to fetching the last 5 commits instead
+- No open PRs -> report that there is no PR to review

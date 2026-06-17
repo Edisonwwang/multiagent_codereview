@@ -3,7 +3,7 @@
 ## Goal
 When the agent is asked to do something and no matching skill exists,
 draft a new skill file and save it to skills/pending/ for Edison to review.
-The agent must NEVER use a pending skill 鈥?it must wait for approval.
+The agent must NEVER use a pending skill - it must wait for approval.
 
 ---
 
@@ -18,8 +18,8 @@ Do NOT trigger this skill if an existing skill can handle the task even partiall
 ---
 
 ## Inputs
-- {task_description} 鈥?what the user wants the agent to do
-- {context} 鈥?any relevant details about the task
+- {task_description} - what the user wants the agent to do
+- {context} - any relevant details about the task
 
 ---
 
@@ -33,7 +33,7 @@ Do NOT trigger this skill if an existing skill can handle the task even partiall
    - What is the goal in one sentence?
    - What are the inputs?
    - What are the steps (be as specific as possible)?
-   - What scripts will it need? (list them 鈥?create stubs if needed)
+   - What scripts will it need? (list them - create stubs if needed)
    - What is the output?
    - What errors should it handle?
 
@@ -67,8 +67,8 @@ Do NOT trigger this skill if an existing skill can handle the task even partiall
 ---
 
 ## Rules
-- NEVER save new skills directly to skills/ 鈥?always skills/pending/ first
-- NEVER use a skill from skills/pending/ 鈥?pending means not approved
+- NEVER save new skills directly to skills/ - always skills/pending/ first
+- NEVER use a skill from skills/pending/ - pending means not approved
 - Always fill in every section of the skill template completely
 - If a new skill needs a Python script that does not exist, create a stub
   at scripts/{script-name}.py with a TODO comment explaining what it should do

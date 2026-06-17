@@ -44,7 +44,7 @@ Shape:
   "tasks": [
     {
       "name": "Review Latest PR",
-      "skill": "fetch-pr -> review-code -> write-report",
+      "skill": "fetch-pr -> code-reviewer -> report-writer",
       "cadence_days": 1,
       "last_run": "2026-06-09",
       "repo": "owner/repo"

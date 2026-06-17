@@ -2,13 +2,13 @@
 
 ## Goal
 Review all commit messages in a PR against conventional commits format.
-Good commit messages make the git history useful 鈥?bad ones make it useless.
+Good commit messages make the git history useful - bad ones make it useless.
 
 ---
 
 ## Inputs
-- {repo} 鈥?GitHub repo in owner/repo format
-- {pr_number} 鈥?PR number
+- {repo} - GitHub repo in owner/repo format
+- {pr_number} - PR number
 
 ---
 
@@ -16,7 +16,7 @@ Good commit messages make the git history useful 鈥?bad ones make it useless.
 
 1. Fetch the commit list for the PR:
    python scripts/fetch_github.py --repo {repo} --pr {pr_number}
-   Read the diff JSON 鈥?extract the pr_title and note it.
+   Read the diff JSON - extract the pr_title and note it.
    For full commit messages, they are visible in the patch context.
 
 2. Evaluate each commit message against conventional commits format:
@@ -54,4 +54,4 @@ Findings in memory for report-writer skill.
 ---
 
 ## Error Handling
-- Cannot fetch commits 鈫?use PR title as the only data point
+- Cannot fetch commits - use PR title as the only data point

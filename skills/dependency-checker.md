@@ -7,7 +7,8 @@ and suspicious version changes.
 ---
 
 ## Inputs
-- {diff_file} 鈥?path to the PR diff JSON from fetch-pr skill
+- {diff_file} - path to the PR diff JSON from fetch-pr skill
+- {output_file} - optional markdown output path, usually outputs/reviews/{repo_slug}_pr{pr_number}_dependency-checker.md
 
 ---
 
@@ -17,7 +18,7 @@ and suspicious version changes.
    - package.json / package-lock.json
    - requirements.txt / Pipfile / pyproject.toml
    - Gemfile / Cargo.toml / go.mod
-   If none of these files were changed, print "No dependency files changed" and stop.
+   If none of these files were changed, write "No dependency files changed" to {output_file} when provided, print the same notice, and stop.
 
 2. For each dependency file changed, extract:
    - Packages that were added (new dependencies)
@@ -31,7 +32,7 @@ and suspicious version changes.
 
 4. Flag the following as CRITICAL:
    - Any package known to have published malicious versions in the past
-     (event-stream, ua-parser-js, colors, faker 鈥?check if version matches known bad versions)
+     (event-stream, ua-parser-js, colors, faker - check if version matches known bad versions)
    - Private package names that look like dependency confusion attacks
      (internal name with a public registry version suddenly appearing)
 
@@ -39,15 +40,16 @@ and suspicious version changes.
    - More than 5 new dependencies added in one PR (suggest splitting)
    - Dev dependencies being added to production dependencies list
 
-6. Print summary and store findings for report-writer.
+6. Save findings to {output_file} when provided, then print summary.
 
 ---
 
 ## Output
-Findings in memory for report-writer skill.
+- Markdown findings in {output_file} when provided.
+- Otherwise, findings in memory for report-writer skill.
 
 ---
 
 ## Error Handling
-- No dependency files in PR 鈫?print notice and stop cleanly
-- Cannot parse dependency file format 鈫?note it as unreadable and skip that file
+- No dependency files in PR - print notice and stop cleanly
+- Cannot parse dependency file format - note it as unreadable and skip that file

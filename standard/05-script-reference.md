@@ -58,6 +58,22 @@ Output:
 outputs/reviews/{owner}_{repo}_pr{number}_diff.json
 ```
 
+## `scripts/orchestrator.py`
+
+Command:
+
+```bash
+python scripts/orchestrator.py --repo owner/repo --pr 42 --wait 300
+```
+
+Purpose:
+
+- Fetch PR data.
+- Write `outputs/reviews/{owner}_{repo}_pr{number}_state.json`.
+- Wait for reviewer markdown outputs when `--wait` is provided.
+- Aggregate reviewer markdown into `outputs/reviews/{owner}_{repo}_pr{number}_review.md`.
+- Run `scripts/update_schedule.py` after all expected reviewer outputs exist.
+
 ## `scripts/search_skills.py`
 
 Commands:

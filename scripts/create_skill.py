@@ -18,6 +18,7 @@ from common import (
     atomic_write_json,
     display_path,
     load_json,
+    normalize_skill_name,
     write_text,
 )
 
@@ -69,8 +70,11 @@ def main():
     parser.add_argument("--tags", required=True, help="comma-separated tags")
     args = parser.parse_args()
 
-    skill_name = args.name.lower().replace(" ", "-")
-    tags = [tag.strip() for tag in args.tags.split(",")]
+    try:
+        skill_name = normalize_skill_name(args.name)
+    except ValueError as e:
+        parser.error(str(e))
+    tags = [tag.strip() for tag in args.tags.split(",") if tag.strip()]
     filepath = PENDING_SKILLS_DIR / f"{skill_name}.md"
 
     # -- Write skill file --------------------------------------------------

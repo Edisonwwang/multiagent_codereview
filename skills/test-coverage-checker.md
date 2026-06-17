@@ -7,7 +7,7 @@ Flag untested functions, classes, and critical paths.
 ---
 
 ## Inputs
-- {diff_file} 鈥?path to the PR diff JSON from fetch-pr skill
+- {diff_file} - path to the PR diff JSON from fetch-pr skill
 
 ---
 
@@ -45,5 +45,5 @@ Findings in memory for report-writer skill.
 ---
 
 ## Error Handling
-- Binary files or minified files 鈫?skip, note as unanalysable
-- No source files in diff 鈫?stop cleanly with notice
+- Binary files or minified files - skip, note as unanalysable
+- No source files in diff - stop cleanly with notice

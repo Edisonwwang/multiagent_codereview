@@ -9,6 +9,7 @@ security issues, style violations, and improvement suggestions.
 ## Inputs
 - {diff_file} - path to the JSON diff file from the fetch-pr skill
   e.g. outputs/reviews/facebook_react_pr1234_diff.json
+- {output_file} - optional markdown output path, usually outputs/reviews/{repo_slug}_pr{pr_number}_code-reviewer.md
 
 ---
 
@@ -45,17 +46,18 @@ security issues, style violations, and improvement suggestions.
    - Already covered by a comment in the diff
    - Outside the scope of the changed lines
 
-4. Store your findings as a structured list in memory - the report-writer skill
-   will use them next.
+4. Save findings to {output_file} when provided. Otherwise, store your findings
+   as a structured list in memory for the report-writer skill.
 
 5. Print a summary to the user:
    "Review complete. Found {n_critical} critical, {n_warning} warnings,
-   {n_suggestions} suggestions. Run write-report to save the full report."
+   {n_suggestions} suggestions. Run report-writer to save the full report."
 
 ---
 
 ## Output
-Structured findings in memory (passed to write-report skill)
+- Markdown findings in {output_file} when provided.
+- Otherwise, structured findings in memory (passed to report-writer skill).
 
 ## Notes
 - Prioritise critical findings over style suggestions

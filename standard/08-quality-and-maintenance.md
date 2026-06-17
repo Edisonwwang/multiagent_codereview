@@ -171,9 +171,6 @@ High-value next steps:
 
 6. Add an optional dry-run mode for posting comments.
 
-7. Add a single orchestrator script for the full review pipeline while keeping
-   AI judgment in the skill-guided review step.
-
 ## Known Local Artifacts
 
 Generated files under `outputs/reviews/` and `.chroma/` are ignored by git.

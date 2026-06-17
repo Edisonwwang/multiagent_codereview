@@ -7,7 +7,7 @@ Flag it before it becomes technical debt.
 ---
 
 ## Inputs
-- {diff_file} 鈥?path to the PR diff JSON from fetch-pr skill
+- {diff_file} - path to the PR diff JSON from fetch-pr skill
 
 ---
 
@@ -28,15 +28,15 @@ Flag it before it becomes technical debt.
    - Flag as SUGGESTION at 3 levels
 
    ### Cognitive complexity indicators
-   - More than 5 if/else branches in one function 鈫?WARNING
-   - Ternary operators nested inside other ternaries 鈫?SUGGESTION
-   - Boolean expressions with more than 4 conditions 鈫?SUGGESTION
+   - More than 5 if/else branches in one function - WARNING
+   - Ternary operators nested inside other ternaries - SUGGESTION
+   - Boolean expressions with more than 4 conditions - SUGGESTION
 
    ### Code duplication
-   - Identical or near-identical blocks appearing more than once in the diff 鈫?SUGGESTION
+   - Identical or near-identical blocks appearing more than once in the diff - SUGGESTION
    - Consider extraction into a shared function
 
-3. Skip test files 鈥?complexity rules are relaxed for tests.
+3. Skip test files - complexity rules are relaxed for tests.
 
 4. Print summary: X functions analysed, Y flagged.
 
@@ -48,5 +48,5 @@ Findings in memory for report-writer skill.
 ---
 
 ## Error Handling
-- Cannot determine function boundaries 鈫?note file as unanalysable
-- Minified or generated code 鈫?skip
+- Cannot determine function boundaries - note file as unanalysable
+- Minified or generated code - skip

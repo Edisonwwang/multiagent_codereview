@@ -10,7 +10,7 @@ import argparse
 import sys
 from datetime import date
 
-from common import SCHEDULE_PATH, STATE_PATH, atomic_write_json, display_path, load_json
+from common import SCHEDULE_PATH, STATE_PATH, atomic_write_json, display_path, load_json, validate_repo
 
 def main():
     parser = argparse.ArgumentParser()
@@ -18,6 +18,10 @@ def main():
     parser.add_argument("--pr",     required=True, type=int)
     parser.add_argument("--status", required=True, choices=["reviewed", "skipped", "failed"])
     args = parser.parse_args()
+    try:
+        validate_repo(args.repo)
+    except ValueError as e:
+        parser.error(str(e))
 
     today = str(date.today())
 

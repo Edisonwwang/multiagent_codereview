@@ -6,7 +6,8 @@ Spot common performance anti-patterns in added code before they hit production.
 ---
 
 ## Inputs
-- {diff_file} 鈥?path to the PR diff JSON from fetch-pr skill
+- {diff_file} - path to the PR diff JSON from fetch-pr skill
+- {output_file} - optional markdown output path, usually outputs/reviews/{repo_slug}_pr{pr_number}_performance-reviewer.md
 
 ---
 
@@ -27,7 +28,7 @@ Spot common performance anti-patterns in added code before they hit production.
    - Large objects stored in session or global state
 
    ### Loop patterns (WARNING)
-   - Nested loops over large collections (O(n虏) risk)
+   - Nested loops over large collections (O(n^2) risk)
    - Repeated expensive calls inside a loop that could be cached outside
    - Array.find() or filter() called repeatedly on the same unchanged array
 
@@ -43,14 +44,15 @@ Spot common performance anti-patterns in added code before they hit production.
 
 3. Skip test files.
 
-4. Print summary.
+4. Save findings to {output_file} when provided, then print summary.
 
 ---
 
 ## Output
-Findings in memory for report-writer skill.
+- Markdown findings in {output_file} when provided.
+- Otherwise, findings in memory for report-writer skill.
 
 ---
 
 ## Error Handling
-- Cannot determine data sizes 鈫?note as assumption-dependent finding
+- Cannot determine data sizes - note as assumption-dependent finding

@@ -2,12 +2,12 @@
 
 ## Goal
 Check that new functions, classes, and modules added in a PR have adequate
-documentation 鈥?docstrings, JSDoc, inline comments for complex logic.
+documentation - docstrings, JSDoc, inline comments for complex logic.
 
 ---
 
 ## Inputs
-- {diff_file} 鈥?path to the PR diff JSON from fetch-pr skill
+- {diff_file} - path to the PR diff JSON from fetch-pr skill
 
 ---
 
@@ -46,4 +46,4 @@ Findings in memory for report-writer skill.
 ---
 
 ## Error Handling
-- Cannot parse file type 鈫?skip with note
+- Cannot parse file type - skip with note

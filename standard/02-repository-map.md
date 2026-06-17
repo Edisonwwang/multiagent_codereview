@@ -101,6 +101,12 @@ Prints due/upcoming scheduled review tasks and recent review history.
 Fetches a PR, its changed files, and commits from GitHub. Saves a normalized
 diff JSON artifact to `outputs/reviews/`.
 
+### `scripts/orchestrator.py`
+
+Fetches PR data, tracks per-PR reviewer output state, aggregates reviewer
+markdown files into the final review report, and updates schedule state after
+all expected reviewer outputs exist.
+
 ### `scripts/search_skills.py`
 
 Finds active skills for a query. Uses Chroma when `.chroma/` exists and contains

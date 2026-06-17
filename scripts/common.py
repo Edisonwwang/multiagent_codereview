@@ -4,6 +4,7 @@ Shared filesystem and JSON helpers for repository scripts.
 
 import json
 import os
+import re
 import tempfile
 from pathlib import Path
 
@@ -19,9 +20,26 @@ SCHEDULE_PATH = AGENTS_DIR / "schedule.json"
 STATE_PATH = AGENTS_DIR / "review_state.json"
 REGISTRY_PATH = AGENTS_DIR / "skills-registry.json"
 
+REPO_RE = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")
+SKILL_NAME_RE = re.compile(r"^[a-z0-9][a-z0-9-]*$")
+
 
 def repo_slug(repo):
+    validate_repo(repo)
     return repo.replace("/", "_")
+
+
+def normalize_skill_name(name):
+    skill_name = name.lower().replace(" ", "-")
+    if not SKILL_NAME_RE.fullmatch(skill_name):
+        raise ValueError("skill name must use lowercase letters, numbers, and hyphens")
+    return skill_name
+
+
+def validate_repo(repo):
+    if not REPO_RE.fullmatch(repo) or any(part in {".", ".."} for part in repo.split("/")):
+        raise ValueError("repo must be in owner/repo format")
+    return repo
 
 
 def display_path(path):

@@ -13,9 +13,20 @@ import sys
 import time
 from datetime import date
 
-from common import ROOT, REVIEWS_DIR, atomic_write_json, display_path, read_text, repo_slug, write_text
+from common import (
+    ROOT,
+    REVIEWS_DIR,
+    atomic_write_json,
+    display_path,
+    load_json,
+    normalize_skill_name,
+    read_text,
+    repo_slug,
+    validate_repo,
+    write_text,
+)
 
-DEFAULT_REVIEWERS = ["security", "style", "performance", "dependency"]
+DEFAULT_REVIEWERS = ["security-scanner", "code-reviewer", "performance-reviewer", "dependency-checker"]
 
 
 def review_paths(repo, pr, reviewers):
@@ -57,18 +68,45 @@ def missing_outputs(paths):
     return [name for name, path in paths.items() if not path.exists()]
 
 
+def severity_counts(paths):
+    counts = {"CRITICAL": 0, "WARNING": 0, "SUGGESTION": 0}
+    for path in paths.values():
+        text = read_text(path).upper()
+        for severity in counts:
+            counts[severity] += text.count(f"[{severity}]")
+    return counts
+
+
 def aggregate_report(repo, pr, paths):
+    diff_path = REVIEWS_DIR / f"{repo_slug(repo)}_pr{pr}_diff.json"
+    diff = load_json(diff_path) if diff_path.exists() else {}
+    counts = severity_counts(paths)
     parts = [
         f"# Code Review - {repo} PR #{pr}",
         "",
-        f"**Reviewed by:** Code Reviewer Agent",
+        "**Reviewed by:** Code Reviewer Agent",
         f"**Date:** {date.today()}",
+        f"**Author:** {diff.get('pr_author', '')}",
+        f"**PR Title:** {diff.get('pr_title', '')}",
         "",
         "---",
         "",
+        "## Summary",
+        "| Severity | Count |",
+        "|----------|-------|",
+        f"| Critical | {counts['CRITICAL']} |",
+        f"| Warning | {counts['WARNING']} |",
+        f"| Suggestion | {counts['SUGGESTION']} |",
+        "",
+        "---",
+        "",
+        "## Findings",
+        "",
     ]
     for name, path in paths.items():
-        parts.extend([f"## {name.title()} Review", "", read_text(path).strip(), "", "---", ""])
+        title = name.replace("-", " ").title()
+        parts.extend([f"### {title}", "", read_text(path).strip(), "", "---", ""])
+    parts.extend(["## Overall Assessment", "", "See reviewer sections above."])
     write_text(report_path(repo, pr), "\n".join(parts).rstrip() + "\n")
 
 
@@ -87,8 +125,15 @@ def main():
     )
     parser.add_argument("--wait", type=int, default=0, help="seconds to wait for reviewer files")
     args = parser.parse_args()
+    try:
+        validate_repo(args.repo)
+    except ValueError as e:
+        parser.error(str(e))
 
-    reviewers = [item.strip() for item in args.reviewers.split(",") if item.strip()]
+    try:
+        reviewers = [normalize_skill_name(item.strip()) for item in args.reviewers.split(",") if item.strip()]
+    except ValueError as e:
+        parser.error(str(e))
     paths = review_paths(args.repo, args.pr, reviewers)
 
     run_script("fetch_github.py", "--repo", args.repo, "--pr", str(args.pr))

@@ -1,6 +1,6 @@
 """
 fetch_github.py
-Fetches a PR diff from GitHub and saves it as JSON for the review-code skill.
+Fetches a PR diff from GitHub and saves it as JSON for the code-reviewer skill.
 
 Usage:
   python scripts/fetch_github.py --repo owner/repo --pr 42
@@ -8,11 +8,10 @@ Usage:
 """
 
 import argparse
-import json
 import sys
 from datetime import date
 
-from common import REVIEWS_DIR, display_path, repo_slug
+from common import REVIEWS_DIR, atomic_write_json, display_path, repo_slug, validate_repo
 from github_client import API_ROOT, get_all_pages, get_json
 
 
@@ -21,6 +20,10 @@ def main():
     parser.add_argument("--repo", required=True, help="owner/repo")
     parser.add_argument("--pr",   type=int,      help="PR number (optional)")
     args = parser.parse_args()
+    try:
+        validate_repo(args.repo)
+    except ValueError as e:
+        parser.error(str(e))
 
     base = f"{API_ROOT}/repos/{args.repo}"
 
@@ -75,10 +78,7 @@ def main():
 
     slug = repo_slug(args.repo)
     path = REVIEWS_DIR / f"{slug}_pr{pr_number}_diff.json"
-    path.parent.mkdir(parents=True, exist_ok=True)
-
-    with path.open("w", encoding="utf-8") as fp:
-        json.dump(output, fp, indent=2)
+    atomic_write_json(path, output)
 
     print(f"[OK] Saved diff -> {display_path(path)}")
     print(f"     {len(files_changed)} file(s) changed in PR #{pr_number}: {pr['title']}")

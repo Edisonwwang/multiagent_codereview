@@ -272,6 +272,15 @@ fetched diff JSON.
 markdown files if `--wait` is passed, aggregates them into the final
 `*_review.md`, then updates schedule state.
 
+By default it waits for:
+
+```text
+outputs/reviews/{owner}_{repo}_pr{number}_security-scanner.md
+outputs/reviews/{owner}_{repo}_pr{number}_code-reviewer.md
+outputs/reviews/{owner}_{repo}_pr{number}_performance-reviewer.md
+outputs/reviews/{owner}_{repo}_pr{number}_dependency-checker.md
+```
+
 ---
 
 ## Testing

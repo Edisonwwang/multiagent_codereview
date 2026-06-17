@@ -18,6 +18,7 @@ from common import (
     atomic_write_json,
     display_path,
     load_json,
+    normalize_skill_name,
 )
 
 
@@ -26,7 +27,10 @@ def main():
     parser.add_argument("--name", required=True, help="pending skill name without .md")
     args = parser.parse_args()
 
-    skill_name = args.name.lower().replace(" ", "-")
+    try:
+        skill_name = normalize_skill_name(args.name)
+    except ValueError as e:
+        parser.error(str(e))
     pending_path = PENDING_SKILLS_DIR / f"{skill_name}.md"
     active_path = SKILLS_DIR / f"{skill_name}.md"
 
@@ -59,8 +63,7 @@ def main():
         print(f"[ERROR] Active skill file already exists: {display_path(active_path)}", file=sys.stderr)
         sys.exit(1)
 
-    os.replace(pending_path, active_path)
-
+    pending_file = entry.get("file")
     entry["file"] = display_path(active_path)
     entry.pop("created", None)
     entry.pop("status", None)
@@ -70,7 +73,14 @@ def main():
     registry["pending"] = remaining_pending
     registry["active"] = active
 
-    atomic_write_json(REGISTRY_PATH, registry)
+    os.replace(pending_path, active_path)
+    try:
+        atomic_write_json(REGISTRY_PATH, registry)
+    except Exception:
+        if active_path.exists() and not pending_path.exists():
+            os.replace(active_path, pending_path)
+        entry["file"] = pending_file
+        raise
 
     print(f"[OK] Approved skill '{skill_name}'")
     print(f"     Moved {display_path(pending_path)} -> {display_path(active_path)}")

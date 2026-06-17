@@ -291,7 +291,6 @@ State JSON            = Memory between sessions
 
 - [x] Phase 1 - Core review pipeline: fetch, review, report
 - [x] Phase 2 - Obsidian vault sync and self-expanding skill library
-- [x] Phase 3 - Chroma vector DB for semantic skill retrieval
 - [x] Phase 3 - Optional Chroma vector DB for semantic skill retrieval
 
 ---
